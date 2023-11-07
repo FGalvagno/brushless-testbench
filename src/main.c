@@ -19,9 +19,9 @@ void configPWM();
 void configADC();
 void configDMA();
 
-uint32_t value; //Valor ADC
-double reading;
-
+long value; //Valor ADC
+long reading;
+double reading_avg;
 int main(void) {
 	HX711_init(128);
 	initTimer0();
@@ -30,11 +30,11 @@ int main(void) {
 	configADC();
 	configDMA();
 
-	HX711_tare(1);
+	HX711_tare(5);
     while(1) {
 
-    reading =	HX711_get_value(2);
-
+    reading =	HX711_read();
+    reading_avg = HX711_get_value(5);
     }
     return 0 ;
 }

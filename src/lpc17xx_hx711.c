@@ -62,7 +62,7 @@ uint32_t HX711_read(void)
 
 uint32_t HX711_read_average(uint8_t times)
 {
-	uint32_t sum = 0;
+	long sum = 0;
 	for (uint8_t i = 0; i < times; i++)
 	{
 		sum += HX711_read();

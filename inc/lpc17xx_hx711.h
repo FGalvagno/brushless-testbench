@@ -17,7 +17,7 @@
 
 
 uint8_t GAIN;
-double OFFSET;
+long OFFSET;
 float SCALE;
 
 void HX711_init(uint8_t gain);
