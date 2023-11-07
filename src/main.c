@@ -1,13 +1,8 @@
-/*
- * Copyright 2022 NXP
- * NXP confidential.
- * This software is owned or controlled by NXP and may only be used strictly
- * in accordance with the applicable license terms.  By expressly accepting
- * such terms or by downloading, installing, activating and/or otherwise using
- * the software, you are agreeing that you have read, and that you agree to
- * comply with and are bound by, such license terms.  If you do not agree to
- * be bound by the applicable license terms, then you may not retain, install,
- * activate or otherwise use the software.
+/*brushless-testbench
+ *periféricos usados: GPDMA, ADC, TIMER0, GPIO
+ *
+ *
+ *
  */
 
 
@@ -16,6 +11,8 @@
 #include "lpc17xx_pinsel.h"
 #include "lpc17xx_gpdma.h"
 #include "lpc17xx_adc.h"
+#include "lpc17xx_timer.h"
+#include "lpc17xx_gpio.h"
 
 void configPinPWM();
 void configPWM();
@@ -23,16 +20,20 @@ void configADC();
 void configDMA();
 
 uint32_t value; //Valor ADC
+double reading;
 
 int main(void) {
-
-
+	HX711_init(128);
+	initTimer0();
 	configPinPWM();
 	configPWM();
 	configADC();
 	configDMA();
 
+	HX711_tare(1);
     while(1) {
+
+    reading =	HX711_get_value(2);
 
     }
     return 0 ;
@@ -135,3 +136,51 @@ void configDMA(void){
 	GPDMA_ChannelCmd(0, ENABLE);
 
 }
+
+void initTimer0(void){
+	 LPC_SC->PCONP |= (1 << 1);
+	 LPC_SC->PCLKSEL0 |= (1 << 2); // PCLK = cclk
+
+	 LPC_TIM0->PR = 19;
+
+	 LPC_TIM0->MR0 = 4;
+	 LPC_TIM0->MCR = 2;         // Timer0 reset on Match0
+}
+
+void delay1us(void)
+{
+
+
+    LPC_TIM0->IR |= 0x3F;      // Clear all interrupt flag
+    LPC_TIM0->TCR = 3;         // Enable and Reset
+    LPC_TIM0->TCR &= ~2;
+
+    while(LPC_TIM0->IR & 1);
+
+
+}
+
+void HX711_init(uint8_t gain)
+{
+	PINSEL_CFG_Type pinCfg;
+	pinCfg.Funcnum = 0;
+	pinCfg.OpenDrain = 0;
+	pinCfg.Pinmode = 0;
+	pinCfg.Portnum = 0;
+	pinCfg.Pinnum = 20;
+	PINSEL_ConfigPin(&pinCfg);
+
+	pinCfg.Funcnum = 0;
+	pinCfg.OpenDrain = 0;
+	pinCfg.Pinmode = 0;
+	pinCfg.Portnum = 0;
+	pinCfg.Pinnum = 19;
+	PINSEL_ConfigPin(&pinCfg);
+
+	GPIO_SetDir(0, 1<<20, 1); //20clk
+
+	GPIO_SetDir(0, 1<<19, 0); //19data
+	HX711_set_gain(gain);
+}
+
+
