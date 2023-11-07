@@ -22,8 +22,11 @@ void configDMA();
 long value; //Valor ADC
 long reading;
 double reading_avg;
+double reading_value;
+uint8_t times = 5;
+
 int main(void) {
-	HX711_init(128);
+	HX711_init();
 	initTimer0();
 	configPinPWM();
 	configPWM();
@@ -33,8 +36,10 @@ int main(void) {
 	HX711_tare(5);
     while(1) {
 
-    reading =	HX711_read();
-    reading_avg = HX711_get_value(5);
+    reading =	HX711_read(1);
+    //reading_avg = HX711_read_average();
+    //reading_value = HX711_get_value();
+    delay1us();
     }
     return 0 ;
 }
@@ -180,7 +185,7 @@ void HX711_init(uint8_t gain)
 	GPIO_SetDir(0, 1<<20, 1); //20clk
 
 	GPIO_SetDir(0, 1<<19, 0); //19data
-	HX711_set_gain(gain);
+	HX711_set_gain(128);
 }
 
 
