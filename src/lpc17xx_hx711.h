@@ -25,8 +25,6 @@ uint8_t GAIN;
 uint32_t OFFSET;
 float SCALE;
 
-
-
 // define channel, and gain factor
 // channel selection is made by passing the appropriate gain: 128 or 64 for channel A, 32 for channel B
 void HX711_init(uint8_t gain);

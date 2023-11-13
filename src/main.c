@@ -1,10 +1,7 @@
 /*brushless-testbench
  *periféricos usados: GPDMA, ADC, TIMER0, GPIO
  *
- *
- *
  */
-
 
 #include "LPC17xx.h"
 #include "lpc17xx_pwm.h"
@@ -13,6 +10,11 @@
 #include "lpc17xx_adc.h"
 #include "lpc17xx_timer.h"
 #include "lpc17xx_gpio.h"
+#include "lpc17xx_uart.h"
+
+
+#define MAX 16
+
 
 void configPinPWM();
 void configPWM();
@@ -24,22 +26,52 @@ long reading;
 double reading_avg;
 double reading_value;
 uint8_t times = 5;
+char arr[16];
+
+int ActualTick = 85213;
+int ActualRPM = 16000;
+int ActualPWM = 12;
+float ActualThrust = 500.3;
+
+char ActualTickArray [MAX];
+char ActualPWMArray  [MAX];
+char ActualRPMArray  [MAX];
+char ActualThrustArray [MAX];
+
+
 
 int main(void) {
-	HX711_init();
-	initTimer0();
-	configPinPWM();
-	configPWM();
-	configADC();
-	configDMA();
 
-	HX711_tare(5);
+
+	PINSEL_CFG_Type PinCfg;
+	//Initialize UART0 TX pin
+	PinCfg.Funcnum = 1;
+	PinCfg.OpenDrain = 0;
+	PinCfg.Pinmode = 0;
+	PinCfg.Pinnum = 2;
+	PinCfg.Portnum = 0;
+	PINSEL_ConfigPin(&PinCfg);
+
+
+
+	init_uart0_default();
+
+
+
+	//HX711_init();
+	//initTimer0();
+	//configPinPWM();
+	//configPWM();
+	//configADC();
+	//configDMA();
+	itoa(5900, arr, 10);
+	//HX711_tare(5);
     while(1) {
-
-    reading =	HX711_read(1);
     //reading_avg = HX711_read_average();
     //reading_value = HX711_get_value();
     delay1us();
+
+    send_bench_data();
     }
     return 0 ;
 }
@@ -187,5 +219,40 @@ void HX711_init(uint8_t gain)
 	GPIO_SetDir(0, 1<<19, 0); //19data
 	HX711_set_gain(128);
 }
+
+void init_uart0_default(void){
+	UART_CFG_Type UARTConfigStruct;
+	UART_ConfigStructInit(&UARTConfigStruct);
+	UART_Init(LPC_UART0, &UARTConfigStruct);
+
+	UART_FIFO_CFG_Type UARTFIFOConfigStruct;
+	UART_FIFOConfigStructInit(&UARTFIFOConfigStruct);
+	UART_FIFOConfig(LPC_UART0, &UARTFIFOConfigStruct);
+
+	UART_TxCmd(LPC_UART0, ENABLE);
+}
+
+void send_bench_data(void){
+
+	itoa(ActualTick, ActualTickArray, 10);
+	itoa(ActualRPM, ActualPWMArray, 10);
+	itoa(ActualPWM, ActualRPMArray, 10);
+	sprintf(ActualThrustArray, "%.2f", ActualThrust);
+
+	UART_Send(LPC_UART0, ActualTickArray, sizeof(ActualTickArray), BLOCKING);
+	UART_Send(LPC_UART0, ",", 1, BLOCKING);
+
+
+	UART_Send(LPC_UART0, ActualPWMArray, sizeof(ActualPWMArray), BLOCKING);
+	UART_Send(LPC_UART0, ",", 1, BLOCKING);
+
+	UART_Send(LPC_UART0, ActualRPMArray, sizeof(ActualRPMArray), BLOCKING);
+	UART_Send(LPC_UART0, ",", 1, BLOCKING);
+
+	UART_Send(LPC_UART0, ActualThrustArray, sizeof(ActualThrustArray), BLOCKING);
+	UART_Send(LPC_UART0, "\n\r", sizeof("\n\r"), BLOCKING);
+
+}
+
 
 
