@@ -102,7 +102,7 @@ void delay1us(void){
 
 void send_bench_data(void){
 	itoa(ActualTick, ActualTickArray, 10);
-	itoa(ActualRPM, ActualRPMArray, 10);
+	sprintf(ActualRPMArray, "%d",ActualRPM);
 	itoa(ActualPWM, ActualPWMArray, 10);
 	sprintf(ActualThrustArray, "%.2f", ActualThrust);
 
