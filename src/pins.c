@@ -4,6 +4,7 @@
 #include "lpc17xx_gpio.h"
 
 void config_pins(void){
+
 	//PWM
 	PINSEL_CFG_Type pinCfg;
 	pinCfg.Funcnum = 2;
@@ -22,11 +23,12 @@ void config_pins(void){
 	PINSEL_ConfigPin(&pinCfg);
 
 	//ADC
-	pinCfg.Funcnum = 3;
+	pinCfg.Funcnum = 1;
 	pinCfg.OpenDrain = 0;
-	pinCfg.Pinmode = 2;
+	pinCfg.Pinmode = 0;
 	pinCfg.Portnum = ADC_PORT;
 	pinCfg.Pinnum = ADC_PIN;
+	PINSEL_ConfigPin(&pinCfg);
 	PINSEL_ConfigPin(&pinCfg);
 
 	//HX_711

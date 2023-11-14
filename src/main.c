@@ -6,6 +6,8 @@
 #include "LPC17xx.h"
 #include "lpc17xx_uart.h"
 #include "lpc17xx_gpdma.h"
+#include "lpc17xx_adc.h"
+#include "lpc17xx_pinsel.h"
 #include "stdlib.h"
 #include "stdio.h"
 
@@ -19,16 +21,20 @@ int ActualRPM = 16000;
 int ActualPWM = 12;
 float ActualThrust = 500.3;
 
+int Channel0_TC;
+int Channel0_Err;
+
+
 char ActualTickArray [MAX_ARRAY];
 char ActualPWMArray  [MAX_ARRAY];
 char ActualRPMArray  [MAX_ARRAY];
 char ActualThrustArray [MAX_ARRAY];
 
-uint32_t rawThrust = 0; //Valor ADC
+volatile int rawThrust; //Valor ADC
 
 void delay1us(void);
 void send_bench_data(void);
-void map_pwm(void);
+int map_pwm(void);
 
 int main(void) {
 	//Config pins and periperials.
@@ -40,10 +46,9 @@ int main(void) {
 	//HX711_set_gain(128);
 
     while(1) {
-         //map_pwm();
-    	int mask = 0xFFF0;
-         rawThrust = ((LPC_ADC->ADDR5&mask));;
-    send_bench_data();
+        send_bench_data();
+        ActualPWM = ((rawThrust>>4)&0xFFF);
+        delay1us();
     }
     return 0 ;
 }
@@ -57,6 +62,7 @@ void delay1us(void){
     while(LPC_TIM0->IR & 1);
 
 }
+
 
 void send_bench_data(void){
 	itoa(ActualTick, ActualTickArray, 10);
@@ -81,16 +87,12 @@ void send_bench_data(void){
 
 
 
-void map_pwm(void){
-	int PWM = ((rawThrust&0xFFF0)>>4)/4096;
-	ActualPWM = PWM;
-	//MAPEO
-}
+
 
 void config_DMA(void){
 
 	GPDMA_LLI_Type LLI1;
-	LLI1.SrcAddr = (uint32_t) &LPC_ADC->ADDR5;
+	LLI1.SrcAddr = (uint32_t) &LPC_ADC->ADDR0;
 	LLI1.DstAddr = (uint32_t) &rawThrust;
 	LLI1.NextLLI = (uint32_t) &LLI1;
 	LLI1.Control = 1
@@ -108,9 +110,29 @@ void config_DMA(void){
 	DMACFG.TransferWidth=0;
 	DMACFG.SrcConn=GPDMA_CONN_ADC;
 	DMACFG.DstConn=0;
-	DMACFG.DMALLI=0;
+	DMACFG.DMALLI=(uint32_t)&LLI1;
 	GPDMA_Setup(&DMACFG);
 
 	GPDMA_ChannelCmd(0, ENABLE);
-
+	NVIC_EnableIRQ(DMA_IRQn);
 }
+
+void DMA_IRQHandler (void)
+{
+	// check GPDMA interrupt on channel 0
+	if (GPDMA_IntGetStatus(GPDMA_STAT_INT, 0)){ //check interrupt status on channel 0
+		// Check counter terminal status
+		if(GPDMA_IntGetStatus(GPDMA_STAT_INTTC, 0)){
+			// Clear terminate counter Interrupt pending
+			GPDMA_ClearIntPending (GPDMA_STATCLR_INTTC, 0);
+				Channel0_TC++;
+		}
+		if (GPDMA_IntGetStatus(GPDMA_STAT_INTERR, 0)){
+			// Clear error counter Interrupt pending
+			GPDMA_ClearIntPending (GPDMA_STATCLR_INTERR, 0);
+			Channel0_Err++;
+		}
+	}
+}
+
+

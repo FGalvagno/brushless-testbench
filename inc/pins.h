@@ -5,8 +5,8 @@
 #define PWM_PORT    1
 #define PWM_PIN     18
 
-#define ADC_PORT    1
-#define ADC_PIN     31
+#define ADC_PORT    0
+#define ADC_PIN     23
 
 #define SERIAL_TX_PORT    0
 #define SERIAL_TX_PIN     2

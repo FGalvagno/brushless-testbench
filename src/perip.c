@@ -51,12 +51,10 @@ void config_PWM(){
 
 void config_ADC(void){
 
-
-
 	ADC_Init(LPC_ADC, 200000);                             //Alimenta y acomoda el clock del adc para que su fs sea 200KHz
 	ADC_BurstCmd(LPC_ADC, ENABLE);                         //Configuración del modo burst
 	ADC_StartCmd(LPC_ADC, ADC_START_CONTINUOUS);           //Configuración del inicio de conversión
-	ADC_ChannelCmd(LPC_ADC, 5, ENABLE);                    //Selección de canal de conversión
+	ADC_ChannelCmd(LPC_ADC, 0, ENABLE);                    //Selección de canal de conversión
 	LPC_ADC->ADGDR &= LPC_ADC->ADGDR;                      //Lee el Global Data para limpiar flag de interrupción
 	ADC_IntConfig(LPC_ADC, ADC_ADINTEN5, ENABLE);          //Activación de interrupción de ADC para que haya DMA request
 	//No activo el NVIC para que el core no me atienda la inter y solo haya una trasferencia DMA
