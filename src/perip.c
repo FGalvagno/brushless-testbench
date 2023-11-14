@@ -87,4 +87,9 @@ void config_UART(void){
 
 /********* PERIP CONTROL ******************/
 
+void update_PWM(int newValue){
+	int var = newValue*(25000/4096)+25000;
+
+	PWM_MatchUpdate(LPC_PWM1, 1, var, PWM_MATCH_UPDATE_NEXT_RST);
+}
 

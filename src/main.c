@@ -30,7 +30,7 @@ char ActualPWMArray  [MAX_ARRAY];
 char ActualRPMArray  [MAX_ARRAY];
 char ActualThrustArray [MAX_ARRAY];
 
-volatile int rawThrust; //Valor ADC
+volatile uint32_t rawThrust; //Valor ADC
 
 void delay1us(void);
 void send_bench_data(void);
@@ -40,15 +40,50 @@ int main(void) {
 	//Config pins and periperials.
 	config_pins();
 	config_perip();
-	config_DMA();
+
+
+	GPDMA_LLI_Type LLI1;
+	LLI1.SrcAddr = (uint32_t) &LPC_ADC->ADDR0;
+	LLI1.DstAddr = (uint32_t) &rawThrust;
+	LLI1.NextLLI = (uint32_t) &LLI1;
+	LLI1.Control = 32
+				   | (2<<18)     //source width 32 bits
+				   | (2<<21);     //dest width 32 bits
+
+	GPDMA_Init();
+
+	GPDMA_Channel_CFG_Type DMACFG;
+	DMACFG.ChannelNum=0;
+	DMACFG.SrcMemAddr=0;
+	DMACFG.DstMemAddr=(uint32_t) &rawThrust;
+	DMACFG.TransferSize=32;
+	DMACFG.TransferType=GPDMA_TRANSFERTYPE_P2M;
+	DMACFG.TransferWidth=0;
+	DMACFG.SrcConn=GPDMA_CONN_ADC;
+	DMACFG.DstConn=0;
+	DMACFG.DMALLI=(uint32_t) &LLI1;
+	GPDMA_Setup(&DMACFG);
+
+	NVIC_EnableIRQ(DMA_IRQn);
+	GPDMA_ChannelCmd(0, ENABLE);
+
+
+
 	//Init HX711
 	//HX711_tare(5);
 	//HX711_set_gain(128);
 
     while(1) {
-        send_bench_data();
-        ActualPWM = ((rawThrust>>4)&0xFFF);
-        delay1us();
+    	ActualPWM = ((rawThrust>>4)&0xFFF)/4.095;
+    	update_PWM((rawThrust>>4)&0xFFF);
+
+
+
+    	send_bench_data();
+
+
+    	delay1us();
+        GPDMA_Setup(&DMACFG);
     }
     return 0 ;
 }
@@ -89,33 +124,6 @@ void send_bench_data(void){
 
 
 
-void config_DMA(void){
-
-	GPDMA_LLI_Type LLI1;
-	LLI1.SrcAddr = (uint32_t) &LPC_ADC->ADDR0;
-	LLI1.DstAddr = (uint32_t) &rawThrust;
-	LLI1.NextLLI = (uint32_t) &LLI1;
-	LLI1.Control = 1
-				   | (2<<18)     //source width 32 bits
-				   | (2<<21);     //dest width 32 bits
-
-	GPDMA_Init();
-
-	GPDMA_Channel_CFG_Type DMACFG;
-	DMACFG.ChannelNum=0;
-	DMACFG.SrcMemAddr=0;
-	DMACFG.DstMemAddr=(uint32_t) &rawThrust;
-	DMACFG.TransferSize=1;
-	DMACFG.TransferType=GPDMA_TRANSFERTYPE_P2M;
-	DMACFG.TransferWidth=0;
-	DMACFG.SrcConn=GPDMA_CONN_ADC;
-	DMACFG.DstConn=0;
-	DMACFG.DMALLI=(uint32_t)&LLI1;
-	GPDMA_Setup(&DMACFG);
-
-	GPDMA_ChannelCmd(0, ENABLE);
-	NVIC_EnableIRQ(DMA_IRQn);
-}
 
 void DMA_IRQHandler (void)
 {
@@ -126,6 +134,7 @@ void DMA_IRQHandler (void)
 			// Clear terminate counter Interrupt pending
 			GPDMA_ClearIntPending (GPDMA_STATCLR_INTTC, 0);
 				Channel0_TC++;
+
 		}
 		if (GPDMA_IntGetStatus(GPDMA_STAT_INTERR, 0)){
 			// Clear error counter Interrupt pending
