@@ -16,6 +16,9 @@
 #define HX_711_DATA_PIN    19
 #define HX_711_CLK_PIN     20
 
+#define RPM_COUNTER_PORT    0
+#define RPM_COUNTER_PIN	    4
+
 void config_pins(void);
 
 
