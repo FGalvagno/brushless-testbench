@@ -8,6 +8,7 @@ void config_perip(){
 	config_ADC();
 	config_TIMER0();
 	config_UART();
+	config_SysTick();
 }
 
 void config_PWM(){
@@ -85,6 +86,10 @@ void config_UART(void){
 	UART_TxCmd(LPC_UART0, ENABLE);
 }
 
+void config_SysTick(void){
+	SysTick_Config(SystemCoreClock/1000); //Configuramos SysTick para 1ms
+}
+
 /********* PERIP CONTROL ******************/
 
 void update_PWM(int newValue){
@@ -92,4 +97,5 @@ void update_PWM(int newValue){
 
 	PWM_MatchUpdate(LPC_PWM1, 1, var, PWM_MATCH_UPDATE_NEXT_RST);
 }
+
 

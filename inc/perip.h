@@ -23,6 +23,8 @@ void config_DMA(void);
 void config_ADC(void);
 void config_TIMER0(void);
 void config_UART(void);
+void config_SysTick(void);
+
 void update_PWM(int newValue);
 
 #endif /* PERIP_H_ */

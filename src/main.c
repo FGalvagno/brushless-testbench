@@ -16,7 +16,7 @@
 #include "perip.h"
 
 
-int ActualTick = 85213;
+unsigned int ActualTick = 0;
 int ActualRPM = 16000;
 int ActualPWM = 12;
 float ActualThrust = 500.3;
@@ -142,6 +142,12 @@ void DMA_IRQHandler (void)
 			Channel0_Err++;
 		}
 	}
+}
+
+void SysTick_Handler(void){
+	ActualTick++;
+
+	SysTick->CTRL &= SysTick->CTRL; //Clear flag
 }
 
 
