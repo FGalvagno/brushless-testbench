@@ -5,6 +5,10 @@
 #include "lpc17xx_hx711.h"
 #define __USE_C99_MATH
 
+uint8_t GAIN;
+uint32_t OFFSET;
+float SCALE;
+
 uint8_t HX711_is_ready() {
     return (DOUT_READ == 0);
 }
