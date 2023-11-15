@@ -82,6 +82,7 @@ int main(void) {
     	update_PWM((rawThrust>>4)&0xFFF);
 
 
+    	reading=HX711_get_mean_units(1);       //mide aplicando offset y scale
 
     	send_bench_data();
 
