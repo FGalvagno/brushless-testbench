@@ -6,7 +6,7 @@
 #define __USE_C99_MATH
 
 uint8_t GAIN;
-uint32_t OFFSET;
+int32_t OFFSET;
 float SCALE;
 
 uint8_t HX711_is_ready() {

@@ -90,7 +90,7 @@ int main(void) {
 
 
     	delay1us();
-        GPDMA_Setup(&DMACFG);
+//        GPDMA_Setup(&DMACFG);
     }
     return 0 ;
 }
