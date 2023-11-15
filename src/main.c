@@ -14,13 +14,10 @@
 #include "lpc17xx_hx711.h"
 #include "pins.h"
 #include "perip.h"
-
-#define PIN10  ((uint32_t)  (1<<10))
-#define PORT2  ((uint8_t)   (2))
-#define INPUT  ((uint8_t)   (0))
-
+unsigned int count = 1000;
+ 
 unsigned int ActualTick = 0;
-int ActualRPM = 16000;
+int ActualRPM = 0;
 int ActualPWM = 12;
 float ActualThrust = 500.3;
 
@@ -34,7 +31,7 @@ char ActualRPMArray  [MAX_ARRAY];
 char ActualThrustArray [MAX_ARRAY];
 
 volatile uint32_t rawThrust; //Valor ADC
-
+volatile uint32_t rawRPM; //Valor RPM
 void delay1us(void);
 void send_bench_data(void);
 void HX711_INICIO(void);
@@ -84,6 +81,7 @@ int main(void) {
 
     	reading=HX711_get_mean_units(1);       //mide aplicando offset y scale
 
+
     	send_bench_data();
 
 
@@ -106,8 +104,8 @@ void delay1us(void){
 
 void send_bench_data(void){
 	itoa(ActualTick, ActualTickArray, 10);
-	itoa(ActualRPM, ActualPWMArray, 10);
-	itoa(ActualPWM, ActualRPMArray, 10);
+	sprintf(ActualRPMArray, "%d",ActualRPM);
+	itoa(ActualPWM, ActualPWMArray, 10);
 	sprintf(ActualThrustArray, "%.2f", ActualThrust);
 
 	UART_Send(LPC_UART0, ActualTickArray, sizeof(ActualTickArray), BLOCKING);
@@ -144,7 +142,11 @@ void EINT3_IRQHandler(void){
 	GPIO_ClearInt(PORT2,PIN10);
 }
 
+void TIMER2_IRQHandler(void){
+    rawRPM++;
 
+    TIM_ClearIntPending(LPC_TIM2, TIM_CR0_INT);
+}
 
 
 void DMA_IRQHandler (void)
@@ -167,8 +169,12 @@ void DMA_IRQHandler (void)
 }
 
 void SysTick_Handler(void){
-	ActualTick++;
-
+	ActualTick++; //1 tick = 1ms
+	if(count-ActualTick == 0){
+		count = ActualTick+1000;
+		ActualRPM = rawRPM*60/2;
+		rawRPM = 0;
+	}
 	SysTick->CTRL &= SysTick->CTRL; //Clear flag
 }
 

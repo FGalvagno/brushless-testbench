@@ -24,6 +24,7 @@ void config_ADC(void);
 void config_TIMER0(void);
 void config_UART(void);
 void config_SysTick(void);
+void config_TIMER2(void);
 
 void update_PWM(int newValue);
 

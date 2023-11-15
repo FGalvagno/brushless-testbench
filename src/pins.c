@@ -18,6 +18,14 @@ void config_pins(void){
 	pinCfg.Pinnum = PWM_PIN;
 	PINSEL_ConfigPin(&pinCfg);
 
+	//CAP2.0
+	pinCfg.Funcnum = 3;
+	pinCfg.OpenDrain = 0;
+	pinCfg.Pinmode = 0;
+	pinCfg.Portnum = RPM_COUNTER_PORT;
+	pinCfg.Pinnum = RPM_COUNTER_PIN;
+	PINSEL_ConfigPin(&pinCfg);
+
 	//SERIAL
 	pinCfg.Funcnum = 1;
 	pinCfg.OpenDrain = 0;

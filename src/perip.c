@@ -7,6 +7,7 @@ void config_perip(){
 	config_PWM();
 	config_ADC();
 	config_TIMER0();
+	config_TIMER2();
 	config_UART();
 	config_SysTick();
 }
@@ -72,6 +73,24 @@ void config_TIMER0(void){
 
 	 LPC_TIM0->MR0 = 4;
 	 LPC_TIM0->MCR = 2;         // Timer0 reset on Match0
+}
+
+void config_TIMER2(void){
+    TIM_TIMERCFG_Type timCfg;
+    timCfg.PrescaleOption = TIM_PRESCALE_TICKVAL;
+    timCfg.PrescaleValue = 1;
+
+	TIM_CAPTURECFG_Type capCfg;
+	capCfg.CaptureChannel = 0;
+	capCfg.FallingEdge = DISABLE;
+	capCfg.IntOnCaption = ENABLE;
+	capCfg.RisingEdge = ENABLE;
+
+	TIM_Init(LPC_TIM2, TIM_TIMER_MODE, (void*) &timCfg);
+	TIM_ConfigCapture(LPC_TIM2, &capCfg);
+	TIM_Cmd(LPC_TIM2, ENABLE);
+
+	NVIC_EnableIRQ(TIMER2_IRQn);
 }
 
 void config_UART(void){
