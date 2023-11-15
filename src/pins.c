@@ -3,9 +3,7 @@
 #include "lpc17xx_pinsel.h"
 #include "lpc17xx_gpio.h"
 
-#define PIN10  ((uint32_t) (1<<10))
-#define PORT2  ((uint8_t)  (2))
-#define INPUT  ((uint8_t)  (0))
+
 
 void config_pins(void){
 

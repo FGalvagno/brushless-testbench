@@ -19,6 +19,10 @@
 #define RPM_COUNTER_PORT    0
 #define RPM_COUNTER_PIN	    4
 
+#define PIN10  ((uint32_t) (1<<10))
+#define PORT2  ((uint8_t)  (2))
+#define INPUT  ((uint8_t)  (0))
+
 void config_pins(void);
 
 
