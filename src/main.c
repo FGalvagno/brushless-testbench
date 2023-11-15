@@ -37,12 +37,16 @@ void send_bench_data(void);
 void HX711_INICIO(void);
 int map_pwm(void);
 
-long reading=0;
+
 
 int main(void) {
 	//Config pins and periperials.
 	config_pins();
 	config_perip();
+
+	for(uint8_t i=0; i==100; i++){
+		delay1us();
+	}
 
 
 	GPDMA_LLI_Type LLI1;
@@ -79,7 +83,7 @@ int main(void) {
     	update_PWM((rawThrust>>4)&0xFFF);
 
 
-    	reading=HX711_get_mean_units(1);       //mide aplicando offset y scale
+    	ActualThrust=HX711_get_mean_units(5);       //mide aplicando offset y scale
 
 
     	send_bench_data();
@@ -128,7 +132,7 @@ void HX711_INICIO(void){
 
 	HX711_set_gain(128);
 
-	HX711_set_offset(HX711_read());      //Hago una medición limpia para encontrar el offset.
+	HX711_tare(5);      //Hago una medición limpia para encontrar el offset.
 
 	HX711_set_scale(441);                //441 Scale calculado por medición práctica
 
@@ -138,7 +142,7 @@ void HX711_INICIO(void){
 
 void EINT3_IRQHandler(void){
 
-	HX711_set_offset(HX711_read());  //Hago una medición limpia para encontrar el offset.
+	HX711_tare(5);  //Hago una medición limpia para encontrar el offset.
 	GPIO_ClearInt(PORT2,PIN10);
 }
 
