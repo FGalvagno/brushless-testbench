@@ -15,6 +15,9 @@
 #include "pins.h"
 #include "perip.h"
 
+#define PIN10  ((uint32_t)  (1<<10))
+#define PORT2  ((uint8_t)   (2))
+#define INPUT  ((uint8_t)   (0))
 
 unsigned int ActualTick = 0;
 int ActualRPM = 16000;
@@ -34,7 +37,10 @@ volatile uint32_t rawThrust; //Valor ADC
 
 void delay1us(void);
 void send_bench_data(void);
+void HX711_INICIO(void);
 int map_pwm(void);
+
+long reading=0;
 
 int main(void) {
 	//Config pins and periperials.
@@ -68,10 +74,8 @@ int main(void) {
 	GPDMA_ChannelCmd(0, ENABLE);
 
 
+	HX711_INICIO();
 
-	//Init HX711
-	//HX711_tare(5);
-	//HX711_set_gain(128);
 
     while(1) {
     	ActualPWM = ((rawThrust>>4)&0xFFF)/4.095;
@@ -121,6 +125,23 @@ void send_bench_data(void){
 }
 
 
+void HX711_INICIO(void){
+
+	HX711_set_gain(128);
+
+	HX711_set_offset(HX711_read());      //Hago una medición limpia para encontrar el offset.
+
+	HX711_set_scale(441);                //441 Scale calculado por medición práctica
+
+	NVIC_EnableIRQ(EINT3_IRQn);          //Pulsador para setear el offset
+
+}
+
+void EINT3_IRQHandler(void){
+
+	HX711_set_offset(HX711_read());  //Hago una medición limpia para encontrar el offset.
+	GPIO_ClearInt(PORT2,PIN10);
+}
 
 
 
