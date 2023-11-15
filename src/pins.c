@@ -3,6 +3,10 @@
 #include "lpc17xx_pinsel.h"
 #include "lpc17xx_gpio.h"
 
+#define PIN10  ((uint32_t) (1<<10))
+#define PORT2  ((uint8_t)  (2))
+#define INPUT  ((uint8_t)  (0))
+
 void config_pins(void){
 
 	//PWM
@@ -57,5 +61,16 @@ void config_pins(void){
 	GPIO_SetDir(0, 1<<20, 1); //20clk
 
 	GPIO_SetDir(0, 1<<19, 0); //19data
+
+	//Switch integrado para seteat offset
+	pinCfg.Portnum = PINSEL_PORT_2;
+	pinCfg.Pinnum = PINSEL_PIN_10;                  //integrated switch para offset
+	pinCfg.Funcnum = PINSEL_FUNC_0;                 //P2.10 as GPIO
+	pinCfg.Pinmode = PINSEL_PINMODE_PULLUP;
+	PINSEL_ConfigPin(&pinCfg);
+    GPIO_SetDir(PORT2, PIN10, INPUT);
+    GPIO_IntCmd(PORT2,PIN10, 1);                    //interrupcion por flanco descendente
+    GPIO_ClearInt(PORT2,PIN10);                     //Limpio flags por las dudas
+
 
 }
