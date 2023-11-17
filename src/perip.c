@@ -103,6 +103,10 @@ void config_UART(void){
 	UART_FIFOConfig(LPC_UART0, &UARTFIFOConfigStruct);
 
 	UART_TxCmd(LPC_UART0, ENABLE);
+    UART_IntConfig(LPC_UART0, UART_INTCFG_RBR, ENABLE);
+    UART_IntConfig(LPC_UART0, UART_INTCFG_RLS, ENABLE);
+	NVIC_EnableIRQ(UART0_IRQn);
+
 }
 
 void config_SysTick(void){

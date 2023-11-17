@@ -11,6 +11,9 @@
 #define SERIAL_TX_PORT    0
 #define SERIAL_TX_PIN     2
 
+#define SERIAL_RX_PORT    0
+#define SERIAL_RX_PIN     3
+
 #define HX_711_DATA_PORT    0
 #define HX_711_CLK_PORT     0
 #define HX_711_DATA_PIN    19

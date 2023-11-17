@@ -32,6 +32,13 @@ void config_pins(void){
 	pinCfg.Portnum = SERIAL_TX_PORT;
 	PINSEL_ConfigPin(&pinCfg);
 
+	pinCfg.Funcnum = 1;
+	pinCfg.OpenDrain = 0;
+	pinCfg.Pinmode = 0;
+	pinCfg.Pinnum = SERIAL_RX_PIN;
+	pinCfg.Portnum = SERIAL_RX_PORT;
+	PINSEL_ConfigPin(&pinCfg);
+
 	//ADC
 	pinCfg.Funcnum = 1;
 	pinCfg.OpenDrain = 0;

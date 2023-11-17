@@ -35,9 +35,9 @@ volatile uint32_t rawRPM; //Valor RPM
 void delay1us(void);
 void send_bench_data(void);
 void HX711_INICIO(void);
-int map_pwm(void);
 
-
+char command;
+int state;
 
 int main(void) {
 	//Config pins and periperials.
@@ -79,9 +79,18 @@ int main(void) {
 
 
     while(1) {
+    	switch (state){
+    	case 1:
     	ActualPWM = ((rawThrust>>4)&0xFFF)/4.095;
     	update_PWM((rawThrust>>4)&0xFFF);
+    	break;
 
+    	case 2:
+        ActualPWM = 500;
+        PWM_MatchUpdate(LPC_PWM1, 1, 37500, PWM_MATCH_UPDATE_NEXT_RST);
+
+        break;
+    	}
 
     	ActualThrust=HX711_get_mean_units(5);       //mide aplicando offset y scale
 
@@ -90,8 +99,10 @@ int main(void) {
 
 
     	delay1us();
+
+
+    		}
 //        GPDMA_Setup(&DMACFG);
-    }
     return 0 ;
 }
 
@@ -182,4 +193,16 @@ void SysTick_Handler(void){
 	SysTick->CTRL &= SysTick->CTRL; //Clear flag
 }
 
+void UART0_IRQHandler(void) {
+
+    // Comprobar si la interrupción es por recepción de datos
+    if (UART_GetIntId(LPC_UART0) & UART_IIR_INTID_RDA) {
+        command = UART_ReceiveByte(LPC_UART0); // Leer el dato recibido
+
+    	if(command == 'L')
+    		state = 1;
+		if (command == 'H')
+    		state = 2;
+ }
+}
 
